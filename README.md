@@ -3,7 +3,17 @@ the installation results in a Debian minimal system which can be used with ``ans
 The idea would then be to continue the installation using ``ansible`` mechanisms like playbooks, roles ....
 
 # Usage
+
+## Downloading
 In order to use this package download an ``iso`` from debian, e.g. ``debian-testing-amd64-netinst.iso``. 
+You can use the script ``./download_iso.sh`` for this. 
+It will download the ``iso`` as well as the ``sha512`` checksums and verify your download.
+Just run for example
+```
+./download_iso.sh http://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso
+```
+
+## Adding the preseed files
 Then just add the preseed files using
 ```
 ./add_preseeds_to_iso.sh debian-testing-amd64-netinst.iso
