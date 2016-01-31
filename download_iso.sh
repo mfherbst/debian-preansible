@@ -29,8 +29,9 @@ download_and_verify() {
 
 # ------------------------------------------------
 
-if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+if [[ "$1" == "-h" || "$1" == "--help" || -z "$1" ]]; then
 	echo "Downloads a debian iso and verifies it." 
+	echo "Supply the url to the iso as first argument."
 	exit 0
 fi
 
