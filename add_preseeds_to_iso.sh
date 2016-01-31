@@ -33,6 +33,42 @@ ask_for_locale() {
 	read -p "Enter keyboard layout to use:  " -e -i "$LAYOUT" LAYOUT
 }
 
+ask_for_authorised_keys() {
+	# Ask user for the authorised keys to include as login keys for
+	# the root user.
+	#
+	# Stores the concatinated content in AUTHORISED_KEYS
+
+
+	echo "   You may store a number of ssh keys on the installation medium, "
+	echo "   which may be used as the inital authorized_keys for root. "
+	echo "   Enter them as a colon(:) separated list."
+
+	local LINE
+
+	for key in $HOME/.ssh/id_*.pub; do
+		[ ! -f "$key" ] && continue
+		if [ -z "$LINE" ]; then
+			LINE="$key"
+		else
+			LINE="$LINE:$key"
+		fi
+	done
+
+	read -p "Enter ssh key files:           " -e -i "$LINE" LINE
+
+	AUTHORISED_KEYS=$(
+		IFS=":"
+		for key in $LINE; do
+			if [ -r "$key" ]; then
+				cat "$key"
+			else
+				echo "Key file not readable: $key" >&2
+				return 1
+			fi
+		done
+	)
+}
 
 copy_iso() {
 	#$1: isofile
@@ -56,6 +92,11 @@ copy_iso() {
 
 add_preseed() {
 	#$1 dir where extracted iso files are located.
+	#
+	# dumps the contents of the variable AUTHORISED_KEYS
+	# for installation as the initial authorized keys for 
+	# root.
+
 	local EXTRACTDIR="$1"
 	if [ ! -d "$EXTRACTDIR" ] ; then
 		echo "Loopdir does not exist: $EXTRACTDIR" >&2
@@ -76,6 +117,9 @@ add_preseed() {
 		echo "Error copying the preseeds dir \"$PRESEEDSDIR\"" >&2
 		return 1
 	fi
+
+	# copy the authorized_keys for root
+	echo "$AUTHORISED_KEYS" > "$EXTRACTDIR/$PRESEEDSDIR/root_keys"
 
 	# drop the locale.cfg
 	echo "d-i  debian-installer/locale string $LOCALE" > "$EXTRACTDIR/$PRESEEDSDIR/parts/locale.cfg"
@@ -134,6 +178,10 @@ if [ -f "$NEWISO" ]; then
 fi
 
 ask_for_locale || exit 1
+echo
+ask_for_authorised_keys || exit 1
+echo
+echo Please wait ...
 
 if ! MODIFYDIR=$(copy_iso "$ISOFILE"); then
 	echo "Error copying the iso: Is it a valid iso file?" >&2
