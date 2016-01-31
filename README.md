@@ -51,6 +51,7 @@ These remarks are a collection of notes and ideas and apply to all three install
 - By default the hostname of the new machine is ``ansible``. Use a properly setup dhcp server to provide the installed machine with a different hostname.
 
 # Installed packages
-In all cases the following packages are automatically installed:
-	- openssh-server
-	- sudo
+In all cases the following packages are automatically installed (next to debian minimal):
+  - openssh-server
+  - sudo
+  - python3-apt
