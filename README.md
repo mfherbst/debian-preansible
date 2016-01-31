@@ -18,16 +18,37 @@ Then just add the preseed files using
 ```
 ./add_preseeds_to_iso.sh debian-testing-amd64-netinst.iso
 ```
-This will add a new menu to the Debian Installer Boot Menu, namely **Preansible Debian automatic install**.
+This will ask you for your preferred locale and keyboard configuration. 
+It will also ask you for ssh keys to include in the installation immage.
+Those will be installed automatically to ``/root/.ssh/authorized_keys`` in some of the installation modes.
 
-# Available installation types
-In the preseed menu **Preansible Debian automatic install** from the Debian Installer Boot Screen
-the following preseeded configurations are available:
-	- *RootOnly*: Install a machine with a ``root`` account, but no other user account. 
-			Partitioning is manual and the root password will be prompted for.
-	- *RootOnlyNoAsk*: Completely automated install of just a ``root`` account. 
-		The full disk will be formatted and the root password is ``r00tme``.
-	- *SinleUser*: Again asks for partitioning and a password, but this time an admin user account is set up and root is disabled.
+# Available installation modes
+Adding the preseed using the aforementioned command adds a new menu to the Debian Installer Boot Menu, namely **Preansible Debian automatic install**.
+It should contain the following preseeded configurations:
+
+## RootOnly
+Install a machine, ready for ``ansible``, which only has a ``root`` but no other user accounts.
+During installation it will ask the following:
+  - Password for ``root``
+  - Partitioning of your hard drives
+After the installation ``root`` login is possible on the terminal via the provided password and login via ``ssh`` is possible using the preseeded ssh keys.
+
+## RootOnlyNoAsk
+Completely automated install yielding a ``root`` account, but no other user accounts.
+It partitions the full hard drive, i.e. it **erases all data without asking** for confirmation.
+``root`` login is only possible via ``ssh`` and the preseeded ssh keys.
+
+## SingleUser
+Install a machine, which has a disabled ``root`` account as well as a user-configured admin account.
+During installation we query for:
+- Admin user name
+- Admin user password
+- Partitioning of your hard drive
+No ssh keys are added to root in this case and login to the admin user is possible both vial ``ssh`` as well as the terminal.
+
+## General notes
+These remarks are a collection of notes and ideas and apply to all three installation modes
+- By default the hostname of the new machine is ``ansible``. Use a properly setup dhcp server to provide the installed machine with a different hostname.
 
 # Installed packages
 In all cases the following packages are automatically installed:
