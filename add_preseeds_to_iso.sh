@@ -18,6 +18,22 @@ check_prerequisites() {
 	fi
 }
 
+search_isolinux() {
+	# Search for an isolinux isohdpfx.bin image
+	# in the default locations and the content of
+	# ISOLINUX_HINT.
+	# If none is found at the usual locations
+	# return 1
+
+	for path in "$ISOLINUX_HINT" /usr/lib/ISOLINUX; do
+		if [ -f "$path/isohdpfx.bin" ]; then
+			ISOLINUX_BIN="$path/isohdpfx.bin"
+			return 0
+		fi
+	done
+	return 1
+}
+
 ask_for_locale() {
 	# Ask user for the locale and keyboard layout he wishes to use
 	#
@@ -155,8 +171,19 @@ add_preseed() {
 }
 
 make_new_iso() {
+	# Reads the global variable
+	# 	ISOLINUX_BIN	the location of the isolinx binary to use 
+	#			or "" if no isolinux boot image should be
+	#			available.
+
+
 	local LOOPDIR="$1"
 	local ISOIMAGE="$2"
+
+	local MBR=()
+	if [ "$ISOLINUX_BIN" ]; then
+		MBR=(-isohybrid-mbr "$ISOLINUX_BIN")
+	fi
 
 	OPTIONS=(
 		#
@@ -171,6 +198,10 @@ make_new_iso() {
 		#
 		# ?? 
 		-cache-inodes 
+		#
+		# Copy an ISOLINUX mbr template, which executes the boot image from BIOS
+		# Also announce it as a GPT partition for booting via EFI and as MBR partition
+		${MBR[@]}
 		#
 		# First boot option
 		#
@@ -234,6 +265,14 @@ NEWISO="$(basename "$ISOFILE" ".iso")-preseeded.iso"
 if [ -f "$NEWISO" ]; then
 	echo "Output iso: $NEWISO already exists" >&2
 	exit 1
+fi
+
+if ! search_isolinux; then
+	echo "WARNING: Could not find ISOLINUX on the system" >&2
+	echo "         Either install isolinux package or set ISOLINUX_HINT to" >&2
+	echo "         the isolinux directory (e.g. /usr/lib/ISOLINUX)" >&2
+	echo "" >&2
+	echo "         Proceeding without ISOLINUX MBR image. Perhaps iso is not bootable ...">&2
 fi
 
 ask_for_locale || exit 1
