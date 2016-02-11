@@ -162,13 +162,19 @@ add_preseed() {
 		return 1
 	fi
 
+	local BOOTVMLINUZ="/install.amd/vmlinuz"
+	if [ ! -f "$EXTRACTDIR/install.amd/vmlinuz" ]; then
+		echo "No amd64 linux kernel found. Falling back to i383" >&2
+		BOOTVMLINUZ="/install/vmlinuz"
+	fi
+
 	local SUBFILE="$EXTRACTDIR/isolinux/preseedsub.cfg"
 	for preseedfile in $PRESEEDSDIR/*.cfg; do
 		NAME=$(echo "$preseedfile" | sed "s/\.cfg$//; s#^$PRESEEDSDIR/##; s/[^a-zA-Z0-9]/_/g")
 		cat <<-EOF
 			label $NAME
 			    menu label Preseed with $(basename "$preseedfile")
-			    kernel /install.amd/vmlinuz
+			    kernel $BOOTVMLINUZ
 			    append auto=true file=/cdrom/$preseedfile preseed-md5=$(md5sum "$preseedfile" | cut -f 1 -d " ") priority=critical vga=788 initrd=/install.amd/initrd.gz --- quiet
 		EOF
 	done > "$SUBFILE"
