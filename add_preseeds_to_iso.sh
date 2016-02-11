@@ -259,6 +259,16 @@ usage() {
 	EOF
 }
 
+cleanup() {
+	# delete temporary directory
+
+	if [ "$DEBUG" == "y" ]; then
+		echo "MODIFYDIR is $MODIFYDIR"
+	else
+		rm -r "$MODIFYDIR"
+	fi
+}
+
 # ------------------------------------------------
 
 check_prerequisites
@@ -313,6 +323,8 @@ if ! MODIFYDIR=$(copy_iso "$ISOFILE"); then
 	echo "Error copying the iso: Is it a valid iso file?" >&2
 	exit 1
 fi
+
+trap cleanup EXIT 
 
 if ! add_preseed "$MODIFYDIR"; then
 	echo "Error adding the preseed stuff." >&2
