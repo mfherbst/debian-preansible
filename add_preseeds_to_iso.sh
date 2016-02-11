@@ -92,6 +92,15 @@ ask_for_authorised_keys() {
 	)
 }
 
+extract_info() {
+	# $1: isofile
+	# fills the variables
+	#  ORIG_VOLUMEID       original volume id of the iso
+
+	local INFO=$(isoinfo  -d -i debian-8.3.0-amd64-netinst.iso)
+	ORIG_VOLUMEID=$(echo "$INFO" | awk -F ": " '/^Volume id:/ { print $2 }')
+}
+
 copy_iso() {
 	#$1: isofile
 	# echos the dir where the extracted copy can be found
@@ -171,7 +180,8 @@ add_preseed() {
 }
 
 make_new_iso() {
-	# Reads the global variable
+	# Reads the global variables
+	# 	ORIG_VOLUMEID	the original volume id
 	# 	ISOLINUX_BIN	the location of the isolinx binary to use 
 	#			or "" if no isolinux boot image should be
 	#			available.
@@ -191,6 +201,9 @@ make_new_iso() {
 		# 
 		# Output file
 		-o "$ISOIMAGE" 
+		#
+		# Volume ID
+		-V "Preseeded $ORIG_VOLUMEID" -A "" 
 		#
 		# Use long joliet (more than 64char filenames)
 		# as well as Rock Ridge extension
@@ -280,6 +293,9 @@ echo
 ask_for_authorised_keys || exit 1
 echo
 echo Please wait ...
+
+# extract some info from the iso file
+extract_info "$ISOFILE"
 
 if ! MODIFYDIR=$(copy_iso "$ISOFILE"); then
 	echo "Error copying the iso: Is it a valid iso file?" >&2
