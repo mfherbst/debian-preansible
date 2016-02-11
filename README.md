@@ -19,8 +19,8 @@ Then just add the preseed files using
 ./add_preseeds_to_iso.sh debian-testing-amd64-netinst.iso
 ```
 This will ask you for your preferred locale and keyboard configuration. 
-It will also ask you for ssh keys to include in the installation immage.
-Those will be installed automatically to ``/root/.ssh/authorized_keys`` in some of the installation modes.
+It will also ask you for ssh keys to include in the installation image.
+Those will be installed automatically to ``/root/.ssh/authorized_keys`` in some of the installation modes (see below).
 
 # Available installation modes
 Adding the preseed using the aforementioned command adds a new menu to the Debian Installer Boot Menu, namely **Preansible Debian automatic install**.
