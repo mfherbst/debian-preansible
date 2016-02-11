@@ -134,8 +134,18 @@ add_preseed() {
 		return 1
 	fi
 
-	# top level dir where the preseed files are located
+	# dir containing this file:
+	local SOURCEPREFIX="$(dirname "${BASH_SOURCE[0]}" )"
+
+	# dirname of the preseeds top level folder.
 	local PRESEEDSDIR="preseeds"
+
+	# check if we can find the preseeds:
+	if [ ! -d "$SOURCEPREFIX/$PRESEEDSDIR" ]; then
+		echo "Could not find preseed files at the expected location">&2
+		echo "   (\"$SOURCEPREFIX/$PRESEEDSDIR\")" >&2
+		return 1
+	fi
 
 	# sanity check: is the "menu begin advanced" there
 	if ! < "$EXTRACTDIR/isolinux/menu.cfg" grep -q 'menu begin advanced'; then
@@ -144,8 +154,8 @@ add_preseed() {
 	fi
 
 	# copy the preseedsdir over
-	if ! rsync -a -H "$PRESEEDSDIR" "$EXTRACTDIR/"; then
-		echo "Error copying the preseeds dir \"$PRESEEDSDIR\"" >&2
+	if ! rsync -a -H "$SOURCEPREFIX/$PRESEEDSDIR" "$EXTRACTDIR/"; then
+		echo "Error copying the preseeds dir \"$SOURCEPREFIX/$PRESEEDSDIR\"" >&2
 		return 1
 	fi
 
@@ -157,8 +167,8 @@ add_preseed() {
 	echo "d-i  keyboard-configuration/xkb-keymap select $LAYOUT" >> "$EXTRACTDIR/$PRESEEDSDIR/parts/locale.cfg"
 	
 	local MENUFILE="menu_extra.cfg" # menu files
-	if ! cp "$MENUFILE" "$EXTRACTDIR/isolinux/preseed.cfg"; then
-		echo "Error copying the preseed menu: \"$MENUFILE\"" >&2
+	if ! cp "$SOURCEPREFIX/$MENUFILE" "$EXTRACTDIR/isolinux/preseed.cfg"; then
+		echo "Error copying the preseed menu: \"$SOURCEPREFIX/$MENUFILE\"" >&2
 		return 1
 	fi
 
@@ -169,7 +179,9 @@ add_preseed() {
 	fi
 
 	local SUBFILE="$EXTRACTDIR/isolinux/preseedsub.cfg"
-	for preseedfile in $PRESEEDSDIR/*.cfg; do
+	for preseedfile in $SOURCEPREFIX/$PRESEEDSDIR/*.cfg; do
+		[ ! -f "$preseedfile" ] && continue
+
 		NAME=$(echo "$preseedfile" | sed "s/\.cfg$//; s#^$PRESEEDSDIR/##; s/[^a-zA-Z0-9]/_/g")
 		cat <<-EOF
 			label $NAME
@@ -221,9 +233,6 @@ make_new_iso() {
 		# as well as Rock Ridge extension
 		-J -r -joliet-long 
 		#
-		# ?? 
-		-cache-inodes 
-		#
 		# Copy an ISOLINUX mbr template, which executes the boot image from BIOS
 		# Also announce it as a GPT partition for booting via EFI and as MBR partition
 		${MBR[@]}
@@ -240,12 +249,11 @@ make_new_iso() {
 		-e boot/grub/efi.img -no-emul-boot -isohybrid-gpt-basdat
 	)
 
-	# Be quiet if not in debug
-	local DUMP=""
-	[ "$DEBUG" != "y" ] && DUMP=">/dev/null"
-
-	# run xorriso
-	xorriso -as mkisofs "${OPTIONS[@]}" "$LOOPDIR" $DUMP
+	QUIET="-quiet"
+	if [ "$DEBUG" == "y" ]; then
+		QUIET=""
+	fi
+	xorriso -as mkisofs $QUIET "${OPTIONS[@]}" "$LOOPDIR"
 }
 
 usage() {
@@ -324,7 +332,7 @@ if ! MODIFYDIR=$(copy_iso "$ISOFILE"); then
 	exit 1
 fi
 
-trap cleanup EXIT 
+trap cleanup EXIT SIGTERM
 
 if ! add_preseed "$MODIFYDIR"; then
 	echo "Error adding the preseed stuff." >&2
