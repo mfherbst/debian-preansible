@@ -182,6 +182,12 @@ add_preseed() {
 	# finally enable the preseed stuff:
 	sed --in-place "/^menu begin advanced/iinclude preseed.cfg" "$EXTRACTDIR/isolinux/menu.cfg"
 
+	# and adjust the md5sums:
+	(
+		cd $EXTRACTDIR
+		md5sum `find ! -name "md5sum.txt" ! -path "./isolinux/*" -follow -type f` > md5sum.txt
+	)
+
 	return 0
 }
 
