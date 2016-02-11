@@ -29,26 +29,29 @@ It should contain the following preseeded configurations:
 ## RootOnly
 Install a machine, ready for ``ansible``, which only has a ``root`` but no other user accounts.
 During installation it will ask the following:
+  - Hostname
   - Password for ``root``
   - Partitioning of your hard drives
+  - Location where to install grub
 After the installation ``root`` login is possible on the terminal via the provided password and login via ``ssh`` is possible using the preseeded ssh keys.
 
 ## RootOnlyNoAsk
 Completely automated install yielding a ``root`` account, but no other user accounts.
 It partitions the full hard drive, i.e. it **erases all data without asking** for confirmation.
 ``root`` login is only possible via ``ssh`` and the preseeded ssh keys.
+The hostname is ``ansible.lan``, which may be overwritten using a properly configured dhcp server 
+during the installation process.
 
 ## SingleUser
 Install a machine, which has a disabled ``root`` account as well as a user-configured admin account.
 During installation we query for:
-- Admin user name
-- Admin user password
-- Partitioning of your hard drive
-No ssh keys are added to root in this case and login to the admin user is possible both vial ``ssh`` as well as the terminal.
-
-## General notes
-These remarks are a collection of notes and ideas and apply to all three installation modes
-- By default the hostname of the new machine is ``ansible``. Use a properly setup dhcp server to provide the installed machine with a different hostname.
+  - Hostname
+  - Admin user name
+  - Admin user password
+  - Partitioning of your hard drive
+  - Location where to install grub
+No ssh keys are added to ``root`` in this case and only login to the admin user is possible.
+Login can be accomplished both via ``ssh`` as well as the terminal.
 
 # Installed packages
 In all cases the following packages are automatically installed (next to debian minimal):
@@ -56,9 +59,7 @@ In all cases the following packages are automatically installed (next to debian 
   - sudo
   - python3-apt
 
-# A word of warning
+# Warning: What has been tested
 These scripts have only been tested using ``jessie`` and ``stretch`` amd64 netinstall images.
 They *should* also work for i386 or other images as well, but I have not tested this.
 Please let me know if things break or work sucessfully there.
-
-Oh and ... automated installation could lead to data loss, so know what you are doing ;).
