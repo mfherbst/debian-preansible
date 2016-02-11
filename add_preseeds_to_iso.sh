@@ -1,13 +1,19 @@
 #!/bin/bash
 
-# We follow this method:
+# We follow these methods:
 # https://wiki.debian.org/DebianInstaller/Preseed/EditIso
+# https://wiki.debian.org/DebianInstaller/Modify/CD
 
 # ------------------------------------------------
 
 check_prerequisites() {
 	if ! which 7z &> /dev/null; then
 		echo "We need to have 7z installed." >&2
+		exit 1
+	fi
+
+	if ! which xorriso &> /dev/null; then
+		echo "We need to have xorriso installed." >&2
 		exit 1
 	fi
 }
@@ -152,19 +158,72 @@ make_new_iso() {
 	local LOOPDIR="$1"
 	local ISOIMAGE="$2"
 
-	genisoimage -o "$ISOIMAGE" -r -J -quiet -no-emul-boot -boot-load-size 4 -boot-info-table -b isolinux/isolinux.bin -c isolinux/boot.cat "$LOOPDIR"
+	OPTIONS=(
+		#
+		# Generic options
+		# 
+		# Output file
+		-o "$ISOIMAGE" 
+		#
+		# Use long joliet (more than 64char filenames)
+		# as well as Rock Ridge extension
+		-J -r -joliet-long 
+		#
+		# ?? 
+		-cache-inodes 
+		#
+		# First boot option
+		#
+		# an legacy iso image
+		-b isolinux/isolinux.bin -c isolinux/boot.cat -boot-load-size 4 -boot-info-table -no-emul-boot
+		#
+		# have another:
+		-eltorito-alt-boot
+		#
+		# an efi iso image
+		-e boot/grub/efi.img -no-emul-boot -isohybrid-gpt-basdat
+	)
+
+	# Be quiet if not in debug
+	local DUMP=""
+	[ "$DEBUG" != "y" ] && DUMP=">/dev/null"
+
+	# run xorriso
+	xorriso -as mkisofs "${OPTIONS[@]}" "$LOOPDIR" $DUMP
+}
+
+usage() {
+	cat <<-EOF
+	$(basename "$0") [ -h | --help | --debug | -d ] <iso>
+
+	Add preseeds to a debian iso file. 
+
+	--debug or -d causes debug files to be kept after the 
+	script has run.
+	EOF
 }
 
 # ------------------------------------------------
 
-ISOFILE="$1"
-
-if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-	echo "First arg is the Debian iso file, second arg is the preseed file."
-	exit 0
-fi
-
 check_prerequisites
+
+DEBUG=n
+while [ "$1" ]; do
+	case "$1" in
+		-h|--help)
+			usage
+			exit 0
+			;;
+		-d|--debug)
+			DEBUG="y"
+			;;
+		*)
+			break
+			;;
+	esac
+	shift
+done
+ISOFILE="$1"
 
 if [ ! -f "$ISOFILE" ]; then
 	echo "The first argument \"$ISOFILE\" is not a valid debian iso" >&2
@@ -198,6 +257,5 @@ if ! make_new_iso "$MODIFYDIR" "$NEWISO"; then
 	exit 1
 fi
 
-rm -r "$MODIFYDIR"
 echo "Preseeded iso can be found in \"$NEWISO\"."
 exit 0
