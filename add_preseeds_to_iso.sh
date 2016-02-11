@@ -68,7 +68,7 @@ ask_for_authorised_keys() {
 
 	local LINE
 
-	for key in $HOME/.ssh/id_*.pub; do
+	for key in $HOME/.ssh/id_*.pub $HOME/.ssh/authorized_keys; do
 		[ ! -f "$key" ] && continue
 		if [ -z "$LINE" ]; then
 			LINE="$key"
