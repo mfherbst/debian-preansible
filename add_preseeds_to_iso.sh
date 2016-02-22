@@ -182,12 +182,12 @@ add_preseed() {
 	for preseedfile in $SOURCEPREFIX/$PRESEEDSDIR/*.cfg; do
 		[ ! -f "$preseedfile" ] && continue
 
-		NAME=$(echo "$preseedfile" | sed "s/\.cfg$//; s#^$PRESEEDSDIR/##; s/[^a-zA-Z0-9]/_/g")
+		NAME=$(echo "$preseedfile" | sed "s/\.cfg$//; s#^$SOURCEPREFIX/$PRESEEDSDIR/##; s/[^a-zA-Z0-9]/_/g")
 		cat <<-EOF
 			label $NAME
 			    menu label Preseed with $(basename "$preseedfile")
 			    kernel $BOOTVMLINUZ
-			    append auto=true file=/cdrom/$preseedfile preseed-md5=$(md5sum "$preseedfile" | cut -f 1 -d " ") priority=critical vga=788 initrd=/install.amd/initrd.gz --- quiet
+			    append auto=true file=/cdrom/$PRESEEDSDIR/$(basename "$preseedfile") preseed-md5=$(md5sum "$preseedfile" | cut -f 1 -d " ") priority=critical vga=788 initrd=/install.amd/initrd.gz --- quiet
 		EOF
 	done > "$SUBFILE"
 
