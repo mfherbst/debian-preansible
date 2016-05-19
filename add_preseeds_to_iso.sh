@@ -8,12 +8,17 @@
 
 check_prerequisites() {
 	if ! which 7z &> /dev/null; then
-		echo "We need to have 7z installed." >&2
+		echo "We need to have 7z installed (from package \"7z\")." >&2
 		exit 1
 	fi
 
 	if ! which xorriso &> /dev/null; then
-		echo "We need to have xorriso installed." >&2
+		echo "We need to have xorriso installed (from package \"xorriso\")." >&2
+		exit 1
+	fi
+
+	if ! which isoinfo &> /dev/null; then
+		echo "We need to have isoinfo installed (from package \"genisoimage\")." >&2
 		exit 1
 	fi
 }
@@ -312,7 +317,7 @@ fi
 
 if ! search_isolinux; then
 	echo "WARNING: Could not find ISOLINUX on the system" >&2
-	echo "         Either install isolinux package or set ISOLINUX_HINT to" >&2
+	echo "         Either install \"isolinux\" package or set ISOLINUX_HINT to" >&2
 	echo "         the isolinux directory (e.g. /usr/lib/ISOLINUX)" >&2
 	echo "" >&2
 	echo "         Proceeding without ISOLINUX MBR image. Perhaps iso is not bootable ...">&2
