@@ -22,7 +22,7 @@ download_and_verify() {
 		echo "sha512sum signature check of  $BASENAME failed."
 		return 1
 	else
-		echo "Signature verification successful."
+		echo "sha512sum signature verification successful."
 		return 0
 	fi
 }
