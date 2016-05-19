@@ -102,7 +102,7 @@ extract_info() {
 	# fills the variables
 	#  ORIG_VOLUMEID       original volume id of the iso
 
-	local INFO=$(isoinfo  -d -i debian-8.3.0-amd64-netinst.iso)
+	local INFO=$(isoinfo  -d -i "$1")
 	ORIG_VOLUMEID=$(echo "$INFO" | awk -F ": " '/^Volume id:/ { print $2 }')
 }
 
