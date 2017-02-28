@@ -205,6 +205,37 @@ add_preseed() {
 	# finally enable the preseed stuff:
 	sed --in-place "/^menu begin advanced/iinclude preseed.cfg" "$EXTRACTDIR/isolinux/menu.cfg"
 
+	#
+	# Extra menu for grub (efi) boot
+	#
+	local GRUBCFG="$EXTRACTDIR/boot/grub/grub.cfg"
+	local GRUBCFG_EXTRA=$({
+		cat <<-EOF
+		submenu 'Preansible Debian automatic install ...' {
+		    set menu_color_normal=cyan/blue
+		    set menu_color_highlight=white/blue
+		    set theme=/boot/grub/theme/1-1
+		EOF
+		for preseedfile in $SOURCEPREFIX/$PRESEEDSDIR/*.cfg; do
+			[ ! -f "$preseedfile" ] && continue
+
+			NAME=$(echo "$preseedfile" | sed "s/\.cfg$//; s#^$SOURCEPREFIX/$PRESEEDSDIR/##; s/[^a-zA-Z0-9]/_/g")
+			cat <<-EOF
+			    menuentry 'Preseeded with $(basename "$preseedfile")' {
+			        set background_color=black
+			        linux $BOOTVMLINUZ auto=true file=/cdrom/$PRESEEDSDIR/$(basename "$preseedfile") preseed-md5=$(md5sum "$preseedfile" | cut -f 1 -d " ") priority=critical vga=788 --- quiet
+			        initrd $INITRD
+			    }
+			EOF
+		done
+		echo "}"
+	})
+	< "$GRUBCFG" awk -v "extra=$GRUBCFG_EXTRA" '
+		/^submenu .Advanced options/ { print extra }
+		{print}
+	' > "$GRUBCFG.new"
+	mv  "$GRUBCFG.new" "$GRUBCFG"
+
 	# and adjust the md5sums:
 	(
 		cd $EXTRACTDIR
