@@ -5,7 +5,7 @@ The idea would then be to continue the installation using ``ansible`` mechanisms
 # Usage
 
 ## Downloading
-In order to use this package download an ``iso`` from debian, e.g. ``debian-testing-amd64-netinst.iso``. 
+In order to use this package, download an ``iso`` from debian, e.g. ``debian-testing-amd64-netinst.iso``. 
 You can use the script ``./download_iso.sh`` for this. 
 It will download the ``iso`` as well as the ``sha512`` checksums and verify your download.
 Just run for example
@@ -13,17 +13,17 @@ Just run for example
 ./download_iso.sh http://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso
 ```
 
-## Adding the preseed files
+## Adding the preseeds
 Then just add the preseed files using
 ```
 ./add_preseeds_to_iso.sh debian-testing-amd64-netinst.iso
 ```
-This will ask you for your preferred locale and keyboard configuration. 
+This will ask you for your preferred locale and keyboard configuration.
 It will also ask you for ssh keys to include in the installation image.
 Those will be installed automatically to ``/root/.ssh/authorized_keys`` in some of the installation modes (see below).
 
 # Available installation modes
-Adding the preseed using the aforementioned command adds a new menu to the Debian Installer Boot Menu, namely **Preansible Debian automatic install**.
+Adding the preseeds using the aforementioned command adds a new menu to the Debian Installer Boot Menu, namely **Preansible Debian automatic install**.
 It should contain the following preseeded configurations:
 
 ## RootOnly
