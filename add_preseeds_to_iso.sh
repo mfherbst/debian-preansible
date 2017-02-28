@@ -170,17 +170,23 @@ add_preseed() {
 	# drop the locale.cfg
 	echo "d-i  debian-installer/locale string $LOCALE" > "$EXTRACTDIR/$PRESEEDSDIR/parts/locale.cfg"
 	echo "d-i  keyboard-configuration/xkb-keymap select $LAYOUT" >> "$EXTRACTDIR/$PRESEEDSDIR/parts/locale.cfg"
-	
+
+	# Determine linux kernel and initrd to use:
+	local BOOTVMLINUZ="/install.amd/vmlinuz"
+	local INITRD="/install.amd/initrd.gz"
+	if [ ! -f "$EXTRACTDIR/install.amd/vmlinuz" ]; then
+		echo "No amd64 linux kernel found. Falling back to i386" >&2
+		BOOTVMLINUZ="/install/vmlinuz"
+		INITRD="/install/initrd.gz"
+	fi
+
+	#
+	# Extra menu for isolinux boot
+	#
 	local MENUFILE="menu_extra.cfg" # menu files
 	if ! cp "$SOURCEPREFIX/$MENUFILE" "$EXTRACTDIR/isolinux/preseed.cfg"; then
 		echo "Error copying the preseed menu: \"$SOURCEPREFIX/$MENUFILE\"" >&2
 		return 1
-	fi
-
-	local BOOTVMLINUZ="/install.amd/vmlinuz"
-	if [ ! -f "$EXTRACTDIR/install.amd/vmlinuz" ]; then
-		echo "No amd64 linux kernel found. Falling back to i383" >&2
-		BOOTVMLINUZ="/install/vmlinuz"
 	fi
 
 	local SUBFILE="$EXTRACTDIR/isolinux/preseedsub.cfg"
@@ -192,7 +198,7 @@ add_preseed() {
 			label $NAME
 			    menu label Preseed with $(basename "$preseedfile")
 			    kernel $BOOTVMLINUZ
-			    append auto=true file=/cdrom/$PRESEEDSDIR/$(basename "$preseedfile") preseed-md5=$(md5sum "$preseedfile" | cut -f 1 -d " ") priority=critical vga=788 initrd=/install.amd/initrd.gz --- quiet
+			    append auto=true file=/cdrom/$PRESEEDSDIR/$(basename "$preseedfile") preseed-md5=$(md5sum "$preseedfile" | cut -f 1 -d " ") priority=critical vga=788 initrd=$INITRD --- quiet
 		EOF
 	done > "$SUBFILE"
 
