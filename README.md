@@ -60,6 +60,7 @@ In all cases the following packages are automatically installed (next to debian 
   - python3-apt
 
 # Warning: What has been tested
-These scripts have only been tested using ``jessie`` and ``stretch`` amd64 netinstall images.
+These scripts have only been tested using ``jessie``, ``stretch`` and ``buster``
+amd64 netinstall images.
 They *should* also work for i386 or other images as well, but I have not tested this.
 Please let me know if things break or work sucessfully there.
