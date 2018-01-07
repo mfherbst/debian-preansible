@@ -33,6 +33,7 @@ During installation it will ask the following:
   - Password for ``root``
   - Partitioning of your hard drives
   - Location where to install grub
+
 After the installation ``root`` login is possible on the terminal via the provided password and login via ``ssh`` is possible using the preseeded ssh keys.
 
 ## RootOnlyNoAsk
@@ -50,6 +51,7 @@ During installation we query for:
   - Admin user password
   - Partitioning of your hard drive
   - Location where to install grub
+
 No ssh keys are added to ``root`` in this case and only login to the admin user is possible.
 Login can be accomplished both via ``ssh`` as well as the terminal.
 
