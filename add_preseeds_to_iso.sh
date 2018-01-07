@@ -43,7 +43,7 @@ ask_for_locale() {
 	# Ask user for the locale and keyboard layout he wishes to use
 	#
 	# Stores values in $LOCALE and $LAYOUT
-	
+
 	local QUERY
 	if ! QUERY=$(setxkbmap -query); then
 		LAYOUT="en"
@@ -130,7 +130,7 @@ add_preseed() {
 	#$1 dir where extracted iso files are located.
 	#
 	# dumps the contents of the variable AUTHORISED_KEYS
-	# for installation as the initial authorized keys for 
+	# for installation as the initial authorized keys for
 	# root.
 
 	local EXTRACTDIR="$1"
@@ -168,8 +168,10 @@ add_preseed() {
 	echo "$AUTHORISED_KEYS" > "$EXTRACTDIR/$PRESEEDSDIR/root_keys"
 
 	# drop the locale.cfg
-	echo "d-i  debian-installer/locale string $LOCALE" > "$EXTRACTDIR/$PRESEEDSDIR/parts/locale.cfg"
-	echo "d-i  keyboard-configuration/xkb-keymap select $LAYOUT" >> "$EXTRACTDIR/$PRESEEDSDIR/parts/locale.cfg"
+	{
+		echo "d-i  debian-installer/locale string $LOCALE"
+		echo "d-i  keyboard-configuration/xkb-keymap select $LAYOUT"
+	} > "$EXTRACTDIR/$PRESEEDSDIR/parts/locale.cfg"
 
 	# Determine linux kernel and initrd to use:
 	local BOOTVMLINUZ="/install.amd/vmlinuz"
@@ -231,9 +233,15 @@ add_preseed() {
 		echo "}"
 	})
 	< "$GRUBCFG" awk -v "extra=$GRUBCFG_EXTRA" '
-		/^submenu .Advanced options/ { print extra }
+		/^submenu (--hotkey=a )?.Advanced options/ { print extra }
 		{print}
 	' > "$GRUBCFG.new"
+
+	if diff "$GRUBCFG.new" "$GRUBCFG" &> /dev/null; then
+		echo "Error: No replacement occurred in $GRUBCFG, where one was exepected." >&2
+		exit 1
+	fi
+
 	mv  "$GRUBCFG.new" "$GRUBCFG"
 
 	# and adjust the md5sums:
@@ -247,8 +255,8 @@ add_preseed() {
 
 make_new_iso() {
 	# Reads the global variables
-	# 	ORIG_VOLUMEID	the original volume id
-	# 	ISOLINUX_BIN	the location of the isolinx binary to use 
+	#	ORIG_VOLUMEID	the original volume id
+	#	ISOLINUX_BIN	the location of the isolinx binary to use
 	#			or "" if no isolinux boot image should be
 	#			available.
 
@@ -264,16 +272,16 @@ make_new_iso() {
 	OPTIONS=(
 		#
 		# Generic options
-		# 
+		#
 		# Output file
-		-o "$ISOIMAGE" 
+		-o "$ISOIMAGE"
 		#
 		# Volume ID
-		-V "Preseeded $ORIG_VOLUMEID" -A "" 
+		-V "Preseeded $ORIG_VOLUMEID" -A ""
 		#
 		# Use long joliet (more than 64char filenames)
 		# as well as Rock Ridge extension
-		-J -r -joliet-long 
+		-J -r -joliet-long
 		#
 		# Copy an ISOLINUX mbr template, which executes the boot image from BIOS
 		# Also announce it as a GPT partition for booting via EFI and as MBR partition
@@ -302,9 +310,9 @@ usage() {
 	cat <<-EOF
 	$(basename "$0") [ -h | --help | --debug | -d ] <iso>
 
-	Add preseeds to a debian iso file. 
+	Add preseeds to a debian iso file.
 
-	--debug or -d causes debug files to be kept after the 
+	--debug or -d causes debug files to be kept after the
 	script has run.
 	EOF
 }
