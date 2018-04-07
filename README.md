@@ -43,6 +43,14 @@ It partitions the full hard drive, i.e. it **erases all data without asking** fo
 The hostname is ``ansible.lan``, which may be overwritten using a properly configured dhcp server 
 during the installation process.
 
+## RootOnlyWeakPass
+Same as *RootOnlyNoAsk*, but the ``root`` account is additionally assigned the
+default password `r00tme`,
+so login is possible via `ssh` and the terminal.
+Needless to say that this is very **insecure**,
+so only run the installation like this inside a local network and change
+the password immediately after the installation has succeeded.
+
 ## SingleUser
 Install a machine, which has a disabled ``root`` account as well as a user-configured admin account.
 During installation we query for:

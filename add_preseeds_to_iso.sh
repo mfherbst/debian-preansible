@@ -97,6 +97,22 @@ ask_for_authorised_keys() {
 	)
 }
 
+find_firmware_file() {
+	FIRMWARE="firmware.tar.gz"
+	if [ ! -f "$FIRMWARE" ]; then
+		echo "   No non-free firmware found. "
+		echo "   Check 'http://github.com/mfherbst/debian-preansible' for details."
+		FIRMWARE=""
+		return 0
+	fi
+
+	echo "   Found debian non-free firmware file '$FIRMWARE'"
+	read -p "Do you wish to add this file to the iso?  (Y/n)" RES
+	if [ "$RES" == "n" -o "$RES" == "N" ]; then
+		FIRMWARE=""
+	fi
+}
+
 extract_info() {
 	# $1: isofile
 	# fills the variables
@@ -253,6 +269,13 @@ add_preseed() {
 	return 0
 }
 
+add_firmware() {
+	local FIRMWARE="$1"
+	local EXTRACTDIR="$2"
+
+	tar -C "$EXTRACTDIR/firmware" -xzf "$FIRMWARE"
+}
+
 make_new_iso() {
 	# Reads the global variables
 	#	ORIG_VOLUMEID	the original volume id
@@ -372,6 +395,8 @@ ask_for_locale || exit 1
 echo
 ask_for_authorised_keys || exit 1
 echo
+find_firmware_file || exit 1
+echo
 echo Please wait ...
 
 # extract some info from the iso file
@@ -383,6 +408,13 @@ if ! MODIFYDIR=$(copy_iso "$ISOFILE"); then
 fi
 
 trap cleanup EXIT SIGTERM
+
+if [ "$FIRMWARE" ]; then
+	if ! add_firmware "$FIRMWARE" "$MODIFYDIR"; then
+		echo "Adding $FIRMWARE failed" >&2
+		exit 1
+	fi
+fi
 
 if ! add_preseed "$MODIFYDIR"; then
 	echo "Error adding the preseed stuff." >&2
