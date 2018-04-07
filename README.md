@@ -6,12 +6,21 @@ The idea would then be to continue the installation using ``ansible`` mechanisms
 
 ## Downloading
 In order to use this package, download an ``iso`` from debian, e.g. ``debian-testing-amd64-netinst.iso``. 
-You can use the script ``./download_iso.sh`` for this. 
+You can use the script ``./download_iso.sh`` for this.
 It will download the ``iso`` as well as the ``sha512`` checksums and verify your download.
 Just run for example
 ```
 ./download_iso.sh http://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso
 ```
+
+If you want to add the non-free firmware blobs to the iso image,
+download additionally the appropriate tarball from
+[cdimage.debian.org](http://cdimage.debian.org/cdimage/unofficial/non-free/firmware),
+e.g.
+```
+./download_iso.sh http://cdimage.debian.org/cdimage/unofficial/non-free/firmware/testing/20180402/firmware.tar.gz
+```
+The script will add the firmware files to the iso automatically alongside the preseeds.
 
 ## Adding the preseeds
 Then just add the preseed files using
